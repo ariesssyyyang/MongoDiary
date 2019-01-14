@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
           //-----------------------*
          //  Initialize window    /
         //-----------------------*
-        let navigationController = UINavigationController(rootViewController: ViewController())
+        let navigationController = UINavigationController(rootViewController: DiaryTableViewController())
         let window = UIWindow(frame: UIScreen.main.bounds)
         window.rootViewController = navigationController
         window.makeKeyAndVisible()
