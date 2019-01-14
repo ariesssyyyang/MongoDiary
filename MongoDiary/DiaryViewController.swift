@@ -12,8 +12,13 @@ class DiaryTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        self.navigationItem.title = "Hot Pot"
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addBarButtonTapped))
     }
 
+    @objc func addBarButtonTapped() {
+        
+    }
 }
 
 extension DiaryTableViewController {
