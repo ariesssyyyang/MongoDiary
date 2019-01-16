@@ -17,7 +17,23 @@ class DiaryTableViewController: UITableViewController {
     }
 
     @objc func addBarButtonTapped() {
-        
+        let editAlert = UIAlertController(title: "New", message: "What's new?", preferredStyle: .alert)
+        editAlert.addTextField { (restaurantTextField) in
+            restaurantTextField.placeholder = "restaurant name..."
+        }
+        editAlert.addTextField { (mrtTextField) in
+            mrtTextField.placeholder = "MRT station..."
+        }
+        editAlert.addTextField { (scoreTextField) in
+            scoreTextField.placeholder = "Please review: (0-100)"
+        }
+        let saveAction = UIAlertAction(title: "Save", style: .default) { (_) in
+            // - TODO: Create document
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        editAlert.addAction(cancelAction)
+        editAlert.addAction(saveAction)
+        self.present(editAlert, animated: true, completion: nil)
     }
 }
 
