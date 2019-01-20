@@ -7,8 +7,12 @@
 //
 
 import UIKit
+import StitchCore
+import StitchLocalMongoDBService
 
 class DiaryTableViewController: UITableViewController {
+
+    private lazy var stitchClient = Stitch.defaultAppClient!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,9 +28,6 @@ class DiaryTableViewController: UITableViewController {
         editAlert.addTextField { (mrtTextField) in
             mrtTextField.placeholder = "MRT station..."
         }
-        editAlert.addTextField { (scoreTextField) in
-            scoreTextField.placeholder = "Please review: (0-100)"
-        }
         let saveAction = UIAlertAction(title: "Save", style: .default) { (_) in
             // - TODO: Create document
         }
@@ -34,6 +35,19 @@ class DiaryTableViewController: UITableViewController {
         editAlert.addAction(cancelAction)
         editAlert.addAction(saveAction)
         self.present(editAlert, animated: true, completion: nil)
+    }
+
+    func createDocument(restaurant: String, mrt: String) {
+        let newDiary: Document = ["restaurant": restaurant, "mrt": mrt]
+        do {
+            let localMongeClient = try stitchClient.serviceClient(
+                fromFactory: mongoClientFactory
+            )
+            let diaryCollection = try localMongeClient.db("diary_db").collection("diary")
+            _ = try diaryCollection.insertOne(newDiary)
+        } catch {
+            debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
+        }
     }
 }
 
