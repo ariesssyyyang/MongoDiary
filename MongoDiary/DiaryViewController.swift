@@ -61,14 +61,27 @@ class DiaryTableViewController: UITableViewController {
         }
     }
 
+    func updateDocument(by id: String, with body: Document) {
+        do {
+            let localMongoClient = try stitchClient.serviceClient(
+                fromFactory: mongoClientFactory
+            )
+            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
+            try diaryCollection.updateOne(filter: ["_id": id], update: body)
+            self.retrieveDocuments()
+        } catch {
+            debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
+        }
+    }
+
     func retrieveDocuments() {
         var items: [[String: String]] = []
         do {
             let localMongoClient = try stitchClient.serviceClient(
                 fromFactory: mongoClientFactory
             )
-            let devCollection = try localMongoClient.db("diary_db").collection("diary")
-            try devCollection.find().forEach { (diary) in
+            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
+            try diaryCollection.find().forEach { (diary) in
                 guard
                     let id = diary["_id"] as? String,
                     let restaurant = diary["restaurant"] as? String,
@@ -87,8 +100,8 @@ class DiaryTableViewController: UITableViewController {
             let localMongoClient = try stitchClient.serviceClient(
                 fromFactory: mongoClientFactory
             )
-            let devCollection = try localMongoClient.db("diary_db").collection("diary")
-            try devCollection.deleteOne(["_id": id])
+            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
+            try diaryCollection.deleteOne(["_id": id])
             self.retrieveDocuments()
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
@@ -100,8 +113,8 @@ class DiaryTableViewController: UITableViewController {
             let localMongoClient = try stitchClient.serviceClient(
                 fromFactory: mongoClientFactory
             )
-            let devCollection = try localMongoClient.db("diary_db").collection("diary")
-            try devCollection.deleteMany(query)
+            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
+            try diaryCollection.deleteMany(query)
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
@@ -134,5 +147,34 @@ extension DiaryTableViewController {
             diaryList.remove(at: indexPath.row)
             self.deleteDocument(by: id)
         }
+    }
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let diary = diaryList[indexPath.row]
+        guard
+            let id = diary["id"],
+            let restaurant = diary["restaurant"],
+            let mrt = diary["mrt"]
+        else { return }
+        let editAlert = UIAlertController(title: "Editing", message: "Tap save after editing.", preferredStyle: .alert)
+        let save = UIAlertAction(title: "Save", style: .default) { (_) in
+            let textFields = editAlert.textFields
+            guard
+                let newRestaurant = textFields?[0].text,
+                let newMrt = textFields?[1].text
+            else { return }
+            self.diaryList[indexPath.row] = ["id": id, "restaurant": newRestaurant, "mrt":newMrt]
+            self.updateDocument(by: id, with: ["restaurant": newRestaurant, "mrt": newMrt])
+        }
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        editAlert.addTextField { (restaurantTextField) in
+            restaurantTextField.text = restaurant
+        }
+        editAlert.addTextField { (mrtTextField) in
+            mrtTextField.text = mrt
+        }
+        editAlert.addAction(save)
+        editAlert.addAction(cancel)
+        self.present(editAlert, animated: true, completion: nil)
     }
 }
