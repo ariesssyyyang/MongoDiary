@@ -67,7 +67,7 @@ class DiaryTableViewController: UITableViewController {
                 fromFactory: mongoClientFactory
             )
             let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.updateOne(filter: ["_id": id], update: body)
+            try diaryCollection.updateOne(filter: ["_id": id], update: ["$set": body])
             self.retrieveDocuments()
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
@@ -157,24 +157,44 @@ extension DiaryTableViewController {
             let mrt = diary["mrt"]
         else { return }
         let editAlert = UIAlertController(title: "Editing", message: "Tap save after editing.", preferredStyle: .alert)
-        let save = UIAlertAction(title: "Save", style: .default) { (_) in
-            let textFields = editAlert.textFields
-            guard
-                let newRestaurant = textFields?[0].text,
-                let newMrt = textFields?[1].text
-            else { return }
-            self.diaryList[indexPath.row] = ["id": id, "restaurant": newRestaurant, "mrt":newMrt]
-            self.updateDocument(by: id, with: ["restaurant": newRestaurant, "mrt": newMrt])
+        let optionAlert = UIAlertController(title: "To update which one?", message: "Please choose the field you want to update.", preferredStyle: .actionSheet)
+        let updateRestaurantOpt = UIAlertAction(title: "Restaurant", style: .default) { (_) in
+            editAlert.addTextField { (restaurantTextField) in
+                restaurantTextField.text = restaurant
+            }
+            let save = UIAlertAction(title: "Save", style: .default) { (_) in
+                guard
+                    let newRestaurant = editAlert.textFields?.first?.text
+                else { return }
+                self.diaryList[indexPath.row] = ["id": id, "restaurant": newRestaurant, "mrt": mrt]
+                self.updateDocument(by: id, with: ["restaurant": newRestaurant])
+            }
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            editAlert.addAction(save)
+            editAlert.addAction(cancel)
+            self.present(editAlert, animated: true, completion: nil)
         }
-        let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-        editAlert.addTextField { (restaurantTextField) in
-            restaurantTextField.text = restaurant
+        let updateMrtOpt = UIAlertAction(title: "MRT", style: .default) { (_) in
+            editAlert.addTextField { (mrtTextField) in
+                mrtTextField.text = mrt
+            }
+            let save = UIAlertAction(title: "Save", style: .default) { (_) in
+                let textFields = editAlert.textFields
+                guard
+                    let newMrt = textFields?.first?.text
+                else { return }
+                self.diaryList[indexPath.row] = ["id": id, "restaurant": restaurant, "mrt":newMrt]
+                self.updateDocument(by: id, with: ["mrt": newMrt])
+            }
+            let cancel = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+            editAlert.addAction(save)
+            editAlert.addAction(cancel)
+            self.present(editAlert, animated: true, completion: nil)
         }
-        editAlert.addTextField { (mrtTextField) in
-            mrtTextField.text = mrt
-        }
-        editAlert.addAction(save)
-        editAlert.addAction(cancel)
-        self.present(editAlert, animated: true, completion: nil)
+        let cancelOpt = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        optionAlert.addAction(cancelOpt)
+        optionAlert.addAction(updateRestaurantOpt)
+        optionAlert.addAction(updateMrtOpt)
+        self.present(optionAlert, animated: true, completion: nil)
     }
 }
