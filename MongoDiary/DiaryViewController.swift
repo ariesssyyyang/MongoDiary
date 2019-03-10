@@ -146,6 +146,7 @@ extension DiaryTableViewController {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "cell")
         cell.textLabel?.text = diaryList[indexPath.row]["restaurant"] ?? "not available"
+        cell.detailTextLabel?.textColor = .lightGray
         cell.detailTextLabel?.text = diaryList[indexPath.row]["mrt"] ?? "n/a"
         return cell
     }
