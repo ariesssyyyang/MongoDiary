@@ -24,6 +24,7 @@ class DiaryTableViewController: UITableViewController {
         super.viewDidLoad()
         self.navigationItem.title = "Hot Pot"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addBarButtonTapped))
+        self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Destroy", style: .plain, target: self, action: #selector(handleDestroy))
         retrieveDocuments()
     }
 
@@ -46,6 +47,18 @@ class DiaryTableViewController: UITableViewController {
         editAlert.addAction(cancelAction)
         editAlert.addAction(saveAction)
         self.present(editAlert, animated: true, completion: nil)
+    }
+
+    @objc func handleDestroy() {
+        let destroyAlert = UIAlertController(title: "WARNING", message: "Are you sure you want to delete all?", preferredStyle: .alert)
+        let yesAction = UIAlertAction(title: "YES", style: .default) { (_) in
+            self.deleteAllDocuments(with: [:])
+            self.retrieveDocuments()
+        }
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
+        destroyAlert.addAction(yesAction)
+        destroyAlert.addAction(cancelAction)
+        self.present(destroyAlert, animated: true, completion: nil)
     }
 
     func createDocument(restaurant: String, mrt: String) {
@@ -108,7 +121,7 @@ class DiaryTableViewController: UITableViewController {
         }
     }
 
-    func deleteAllDocuments(query: Document) {
+    func deleteAllDocuments(with query: Document) {
         do {
             let localMongoClient = try stitchClient.serviceClient(
                 fromFactory: mongoClientFactory
