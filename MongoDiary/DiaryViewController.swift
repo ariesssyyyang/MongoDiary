@@ -62,13 +62,13 @@ class DiaryTableViewController: UITableViewController {
     }
 
     func createDocument(restaurant: String, mrt: String) {
-        let newDiary: Document = ["_id": randomString(), "restaurant": restaurant, "mrt": mrt]
         do {
+            let jsonData = try JSONEncoder().encode(["_id": randomString(), "restaurant": restaurant, "mrt": mrt])
             let localMongeClient = try stitchClient.serviceClient(
                 fromFactory: mongoClientFactory
             )
             let diaryCollection = try localMongeClient.db("diary_db").collection("diary")
-            _ = try diaryCollection.insertOne(newDiary)
+            _ = try diaryCollection.insertOne(Document(fromJSON: jsonData))
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
