@@ -6,6 +6,6 @@ target 'MongoDiary' do
   use_frameworks!
 
   # Pods for MongoDiary
-  pod 'StitchSDK', '~> 4.1.0'
-  pod 'StitchLocalMongoDBService', '~> 4.1.0'
+  pod 'StitchSDK', '~> 5.0.0'
+  pod 'StitchLocalMongoDBService', '~> 5.0.0'
 end
