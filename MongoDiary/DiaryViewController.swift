@@ -94,7 +94,8 @@ class DiaryTableViewController: UITableViewController {
 
     func createDocument(restaurant: String, mrt: String) {
         do {
-            let jsonData = try JSONEncoder().encode(["_id": randomString(), "restaurant": restaurant, "mrt": mrt])
+            let user_id = stitchClient.auth.currentUser!.id
+            let jsonData = try JSONEncoder().encode(["restaurant": restaurant, "mrt": mrt, "owner_id": user_id])
             let remoteMongoClient = try stitchClient.serviceClient(
                 fromFactory: remoteMongoClientFactory,
                 withName: serviceName
@@ -104,6 +105,7 @@ class DiaryTableViewController: UITableViewController {
                 switch result {
                 case .success(let hotpot):
                     print("👻 Successfully inserted hotpot diary with _id: \(hotpot.insertedId)")
+                    self.retrieveDocuments()
                 case .failure(let error):
                     print("💩 Failed to insert hotpot diary: \(error)")
                 }
@@ -125,18 +127,18 @@ class DiaryTableViewController: UITableViewController {
                 switch result {
                 case .success(let hotpot):
                     print("👻 Successfully updated hotpot diary count: \(hotpot.modifiedCount)")
+                    self.retrieveDocuments()
                 case .failure(let error):
                     print("💩 Failed to updated hotpot diary: \(error)")
                 }
             })
-            self.retrieveDocuments()
+            
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }
 
     func retrieveDocuments() {
-        var items: [[String: String]] = []
         do {
             let remoteMongoClient = try stitchClient.serviceClient(
                 fromFactory: remoteMongoClientFactory,
@@ -147,9 +149,10 @@ class DiaryTableViewController: UITableViewController {
                 switch results {
                 case .success(let hotpots):
                     print("👻 Successfully found \(hotpots.count) hotpots:")
+                    var items: [[String: String]] = []
                     hotpots.forEach({ (hotpot) in
                         guard
-                            let id = hotpot["_id"] as? String,
+                            let id = hotpot["_id"] as? ObjectId,
                             let restaurant = hotpot["restaurant"] as? String,
                             let mrt = hotpot["mrt"] as? String
                             else {
@@ -157,8 +160,9 @@ class DiaryTableViewController: UITableViewController {
                                 return
                             }
                         print("🍲 \(restaurant)")
-                        items.append(["id": id, "restaurant": restaurant, "mrt": mrt])
+                        items.append(["id": id.oid, "restaurant": restaurant, "mrt": mrt])
                     })
+                    self.diaryList = items
                 case .failure(let error):
                     print("💩 Failed to find documents: \(error)")
                 }
@@ -166,7 +170,6 @@ class DiaryTableViewController: UITableViewController {
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
-        self.diaryList = items
     }
 
     func deleteDocument(by id: String) {
