@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //-----------------------*
         do {
             _ = try Stitch.initializeDefaultAppClient(
-                withClientAppID: "mongodiary"
+                withClientAppID: "mongo_diary_ios-pxatc"
             )
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
