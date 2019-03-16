@@ -17,7 +17,9 @@ class DiaryTableViewController: UITableViewController {
 
     var diaryList: [[String: String]] = [] {
         didSet {
-            self.tableView.reloadData()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
 
@@ -26,7 +28,7 @@ class DiaryTableViewController: UITableViewController {
         self.navigationItem.title = "Hot Pot"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addBarButtonTapped))
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Destroy", style: .plain, target: self, action: #selector(handleDestroy))
-        retrieveDocuments()
+        checkLogin()
     }
 
     @objc func addBarButtonTapped() {
@@ -62,9 +64,33 @@ class DiaryTableViewController: UITableViewController {
         self.present(destroyAlert, animated: true, completion: nil)
     }
 
+    func loggedIn() {
+        retrieveDocuments()
+    }
+
+    func checkLogin() {
+        if stitchClient.auth.isLoggedIn {
+            loggedIn()
+        } else {
+            doLogin()
+        }
+    }
+
     //============================
     //  - MARK: Mongo Serivces
     //============================
+
+    func doLogin() {
+        stitchClient.auth.login(withCredential: AnonymousCredential()) { (result) in
+            switch result {
+            case .success(let user):
+                print("👻 logged in: \(user.id)")
+                self.loggedIn()
+            case .failure(let error):
+                print("💩 error logging in \(error)")
+            }
+        }
+    }
 
     func createDocument(restaurant: String, mrt: String) {
         do {
