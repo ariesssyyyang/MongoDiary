@@ -8,15 +8,18 @@
 
 import UIKit
 import StitchCore
-import StitchLocalMongoDBService
+import StitchRemoteMongoDBService
 
 class DiaryTableViewController: UITableViewController {
 
     private lazy var stitchClient = Stitch.defaultAppClient!
+    private let serviceName = "mongodb-atlas"
 
     var diaryList: [[String: String]] = [] {
         didSet {
-            self.tableView.reloadData()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
         }
     }
 
@@ -25,7 +28,7 @@ class DiaryTableViewController: UITableViewController {
         self.navigationItem.title = "Hot Pot"
         self.navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(addBarButtonTapped))
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(title: "Destroy", style: .plain, target: self, action: #selector(handleDestroy))
-        retrieveDocuments()
+        checkLogin()
     }
 
     @objc func addBarButtonTapped() {
@@ -61,61 +64,130 @@ class DiaryTableViewController: UITableViewController {
         self.present(destroyAlert, animated: true, completion: nil)
     }
 
+    func loggedIn() {
+        retrieveDocuments()
+    }
+
+    func checkLogin() {
+        if stitchClient.auth.isLoggedIn {
+            loggedIn()
+        } else {
+            doLogin()
+        }
+    }
+
+    //============================
+    //  - MARK: Mongo Serivces
+    //============================
+
+    func doLogin() {
+        stitchClient.auth.login(withCredential: AnonymousCredential()) { (result) in
+            switch result {
+            case .success(let user):
+                print("👻 logged in: \(user.id)")
+                self.loggedIn()
+            case .failure(let error):
+                print("💩 error logging in \(error)")
+            }
+        }
+    }
+
     func createDocument(restaurant: String, mrt: String) {
         do {
-            let jsonData = try JSONEncoder().encode(["_id": randomString(), "restaurant": restaurant, "mrt": mrt])
-            let localMongeClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
+            let user_id = stitchClient.auth.currentUser!.id
+            let jsonData = try JSONEncoder().encode(["restaurant": restaurant, "mrt": mrt, "owner_id": user_id])
+            let remoteMongoClient = try stitchClient.serviceClient(
+                fromFactory: remoteMongoClientFactory,
+                withName: serviceName
             )
-            let diaryCollection = try localMongeClient.db("diary_db").collection("diary")
-            _ = try diaryCollection.insertOne(Document(fromJSON: jsonData))
+            let hotpotCollection = remoteMongoClient.db("diary").collection("hotpot")
+            try hotpotCollection.insertOne(Document(fromJSON: jsonData), { (result) in
+                switch result {
+                case .success(let hotpot):
+                    print("👻 Successfully inserted hotpot diary with _id: \(hotpot.insertedId)")
+                    self.retrieveDocuments()
+                case .failure(let error):
+                    print("💩 Failed to insert hotpot diary: \(error)")
+                }
+            })
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }
 
-    func updateDocument(by id: String, with body: Document) {
+    func updateDocument(by id: String, with body: [String: String]) {
         do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
+            let jsonData = try JSONEncoder().encode(body)
+            let remoteMongoClient = try stitchClient.serviceClient(
+                fromFactory: remoteMongoClientFactory,
+                withName: serviceName
             )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.updateOne(filter: ["_id": id], update: ["$set": body])
-            self.retrieveDocuments()
+            let hotpotCollection = remoteMongoClient.db("diary").collection("hotpot")
+            try hotpotCollection.updateOne(filter: ["_id": id], update: ["$set": Document(fromJSON: jsonData)], { (result) in
+                switch result {
+                case .success(let hotpot):
+                    print("👻 Successfully updated hotpot diary count: \(hotpot.modifiedCount)")
+                    self.retrieveDocuments()
+                case .failure(let error):
+                    print("💩 Failed to updated hotpot diary: \(error)")
+                }
+            })
+            
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }
 
     func retrieveDocuments() {
-        var items: [[String: String]] = []
         do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
+            let remoteMongoClient = try stitchClient.serviceClient(
+                fromFactory: remoteMongoClientFactory,
+                withName: serviceName
             )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.find().forEach { (diary) in
-                guard
-                    let id = diary["_id"] as? String,
-                    let restaurant = diary["restaurant"] as? String,
-                    let mrt = diary["mrt"] as? String
-                else { return }
-                items.append(["id": id, "restaurant": restaurant, "mrt": mrt])
+            let hotpotCollection = remoteMongoClient.db("diary").collection("hotpot")
+            hotpotCollection.find().toArray { (results) in
+                switch results {
+                case .success(let hotpots):
+                    print("👻 Successfully found \(hotpots.count) hotpots:")
+                    var items: [[String: String]] = []
+                    hotpots.forEach({ (hotpot) in
+                        guard
+                            let id = hotpot["_id"] as? ObjectId,
+                            let restaurant = hotpot["restaurant"] as? String,
+                            let mrt = hotpot["mrt"] as? String
+                            else {
+                                print("👿 Failed to parse hotpot diary")
+                                return
+                            }
+                        print("🍲 \(restaurant)")
+                        items.append(["id": id.oid, "restaurant": restaurant, "mrt": mrt])
+                    })
+                    self.diaryList = items
+                case .failure(let error):
+                    print("💩 Failed to find documents: \(error)")
+                }
             }
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
-        self.diaryList = items
     }
 
     func deleteDocument(by id: String) {
         do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
+            let remoteMongoClient = try stitchClient.serviceClient(
+                fromFactory: remoteMongoClientFactory,
+                withName: serviceName
             )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.deleteOne(["_id": id])
-            self.retrieveDocuments()
+            let hotpotCollection = remoteMongoClient.db("diary").collection("hotpot")
+            hotpotCollection.deleteOne(["_id": id]) { (result) in
+                switch result {
+                case .success(let hotpot):
+                    print("👻 Deleted \(hotpot.deletedCount) hotpot.")
+                    self.retrieveDocuments()
+                case .failure(let error):
+                    print("💩 Delete failed with error: \(error)")
+                }
+            }
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
@@ -123,11 +195,20 @@ class DiaryTableViewController: UITableViewController {
 
     func deleteAllDocuments(with query: Document) {
         do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
+            let remoteMongoClient = try stitchClient.serviceClient(
+                fromFactory: remoteMongoClientFactory,
+                withName: serviceName
             )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.deleteMany(query)
+            let hotpotCollection = remoteMongoClient.db("diary").collection("hotpot")
+            hotpotCollection.deleteMany(query, { (result) in
+                switch result {
+                case .success(let hotpots):
+                    print("👻 Deleted \(hotpots.deletedCount) hotpot(s).")
+                    self.retrieveDocuments()
+                case .failure(let error):
+                    print("💩 Delete failed with error: \(error)")
+                }
+            })
         } catch {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
