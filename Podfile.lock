@@ -1,43 +1,47 @@
 PODS:
+  - AyyyLocal (1.0.1):
+    - StitchLocalMongoDBService (~> 6.0.0)
+    - StitchSDK (~> 6.0.0)
   - mongo-embedded-c-driver (1.13.0-4.0.4)
   - mongo_embedded (4.0.4)
   - mongoc_embedded (4.0.4):
     - mongo-embedded-c-driver (~> 1.13.0-4.0.4)
     - mongo_embedded (~> 4.0.4)
-  - MongoMobile (0.0.5):
+  - MongoMobile (0.1.0):
     - mongo_embedded (~> 4.0.4)
     - mongoc_embedded (~> 4.0.4)
-    - MongoSwift (~> 0.0.7)
-  - MongoSwift (0.0.7):
+    - MongoSwift (~> 0.1.0)
+  - MongoSwift (0.1.0):
     - mongo-embedded-c-driver (~> 1.13.0-4.0.0)
-  - StitchCore (4.1.1):
-    - StitchCoreSDK (= 4.1.1)
-  - StitchCoreLocalMongoDBService (4.1.1):
-    - MongoMobile (= 0.0.5)
-    - StitchCoreSDK (= 4.1.1)
-  - StitchCoreRemoteMongoDBService (4.1.1):
-    - StitchCoreSDK (= 4.1.1)
-  - StitchCoreSDK (4.1.1):
-    - MongoSwift (= 0.0.7)
-  - StitchLocalMongoDBService (4.1.1):
-    - StitchCore (= 4.1.1)
-    - StitchCoreLocalMongoDBService (= 4.1.1)
-  - StitchRemoteMongoDBService (4.1.1):
-    - StitchCore (= 4.1.1)
-    - StitchCoreRemoteMongoDBService (= 4.1.1)
-  - StitchSDK (4.1.1):
-    - StitchSDK/StitchSDK (= 4.1.1)
-  - StitchSDK/StitchRemoteMongoDBService (4.1.1):
-    - StitchRemoteMongoDBService (= 4.1.1)
-  - StitchSDK/StitchSDK (4.1.1):
+  - StitchCore (6.0.1):
+    - StitchCoreSDK (= 6.0.1)
+  - StitchCoreLocalMongoDBService (6.0.1):
+    - MongoMobile (= 0.1.0)
+    - StitchCoreSDK (= 6.0.1)
+  - StitchCoreRemoteMongoDBService (6.0.1):
+    - StitchCoreLocalMongoDBService (= 6.0.1)
+    - StitchCoreSDK (= 6.0.1)
+  - StitchCoreSDK (6.0.1):
+    - MongoSwift (= 0.1.0)
+  - StitchLocalMongoDBService (6.0.1):
+    - StitchCore (= 6.0.1)
+    - StitchCoreLocalMongoDBService (= 6.0.1)
+  - StitchRemoteMongoDBService (6.0.1):
+    - StitchCore (= 6.0.1)
+    - StitchCoreRemoteMongoDBService (= 6.0.1)
+  - StitchSDK (6.0.1):
+    - StitchSDK/StitchSDK (= 6.0.1)
+  - StitchSDK/StitchRemoteMongoDBService (6.0.1):
+    - StitchRemoteMongoDBService (= 6.0.1)
+  - StitchSDK/StitchSDK (6.0.1):
     - StitchSDK/StitchRemoteMongoDBService
 
 DEPENDENCIES:
-  - StitchLocalMongoDBService (~> 4.1.0)
-  - StitchSDK (~> 4.1.0)
+  - AyyyLocal (~> 1.0.0)
 
 SPEC REPOS:
-  https://github.com/CocoaPods/Specs.git:
+  https://github.com/cocoapods/specs.git:
+    - AyyyLocal
     - mongo-embedded-c-driver
     - mongo_embedded
     - mongoc_embedded
@@ -52,19 +56,20 @@ SPEC REPOS:
     - StitchSDK
 
 SPEC CHECKSUMS:
+  AyyyLocal: 5760f89fb5477eaba03d023e93020f47b4e73dee
   mongo-embedded-c-driver: b46360baa15fc142baae80628822f26663220bde
   mongo_embedded: e413134eb6b60544e7278add03007f8fe384a00c
   mongoc_embedded: 41aadbb756b07070d6f0471192a84750cb42c580
-  MongoMobile: 2fc916b194dc19b9a6b8d948d42441b0b37812e7
-  MongoSwift: de22baca5a59aef44de44e07ee9adb8c4f59c5ee
-  StitchCore: 341cdc409c52babb505f152a01232ba60cbdee55
-  StitchCoreLocalMongoDBService: a76bd6d3fb845158b95e896f638e908dcd65b514
-  StitchCoreRemoteMongoDBService: 1eacc874bbc227466951b0eedb44e872efd0459f
-  StitchCoreSDK: 3c3cb812dd371d790935f082810e93e9c90727fe
-  StitchLocalMongoDBService: 0537b7fc1d9ae69b90eddc28b8dac0c4e3c029d2
-  StitchRemoteMongoDBService: ad6bf3d39ceba7f5026f065ea67ba341bc195c2e
-  StitchSDK: e291ceeb90f06b8d534ef27b425e3fa7e67d3d57
+  MongoMobile: 988e8d2fd322761d6358570dde8a2b3d44801823
+  MongoSwift: e20f86eae1beb06bbba49c2d73bb570961cc4c85
+  StitchCore: 9e5c62bb7069254af142e0ef18aae8a484e1b6d8
+  StitchCoreLocalMongoDBService: e085bee742eecaf9d30a8999fdf9f5e814856c8b
+  StitchCoreRemoteMongoDBService: 54db4d87f05146784294ed3f5c953bdf7eef4a40
+  StitchCoreSDK: 3d50f074d322ee1d1b087d319e6b3ccb7b892f26
+  StitchLocalMongoDBService: adaf7b4067da6f69b8777e4738bbf53823f18b0b
+  StitchRemoteMongoDBService: e31d88bb2e8ad451f0929bd64062601852dfdc24
+  StitchSDK: 871fd2d6e1b6a0652e40ad7aa5007c925e47cecc
 
-PODFILE CHECKSUM: 24677b8243f1a14c7bdaadfe073eb8105f708dd0
+PODFILE CHECKSUM: 2fbefda072b4b5b58682aee390b24d55ce00e7fd
 
-COCOAPODS: 1.5.0
+COCOAPODS: 1.6.0

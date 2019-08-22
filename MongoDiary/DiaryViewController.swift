@@ -7,12 +7,12 @@
 //
 
 import UIKit
-import StitchCore
-import StitchLocalMongoDBService
+import AyyyLocal
 
 class DiaryTableViewController: UITableViewController {
 
-    private lazy var stitchClient = Stitch.defaultAppClient!
+    private let collection: String = "diary"
+    private let group: String = "diary_db"
 
     var diaryList: [[String: String]] = [] {
         didSet {
@@ -62,39 +62,24 @@ class DiaryTableViewController: UITableViewController {
     }
 
     func createDocument(restaurant: String, mrt: String) {
-        do {
-            let jsonData = try JSONEncoder().encode(["_id": randomString(), "restaurant": restaurant, "mrt": mrt])
-            let localMongeClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
-            )
-            let diaryCollection = try localMongeClient.db("diary_db").collection("diary")
-            _ = try diaryCollection.insertOne(Document(fromJSON: jsonData))
-        } catch {
+        if let error = AyyyLocal.damn.createEntity(["_id": randomString(), "restaurant": restaurant, "mrt": mrt], into: collection, groupBy: group) {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }
 
-    func updateDocument(by id: String, with body: Document) {
-        do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
-            )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.updateOne(filter: ["_id": id], update: ["$set": body])
-            self.retrieveDocuments()
-        } catch {
+    func updateDocument(by id: String, with body: [String: Any]) {
+        if let error = AyyyLocal.damn.updateEntity(of: id, with: ["$set": body], from: collection, groupBy: group) {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
+        } else {
+            self.retrieveDocuments()
         }
     }
 
     func retrieveDocuments() {
         var items: [[String: String]] = []
-        do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
-            )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.find().forEach { (diary) in
+        switch AyyyLocal.damn.retrieveEntityList(by: [:], from: collection, groupBy: group) {
+        case .success(let entityList):
+            entityList.forEach { (diary) in
                 guard
                     let id = diary["_id"] as? String,
                     let restaurant = diary["restaurant"] as? String,
@@ -102,33 +87,20 @@ class DiaryTableViewController: UITableViewController {
                 else { return }
                 items.append(["id": id, "restaurant": restaurant, "mrt": mrt])
             }
-        } catch {
+        case .failure(let error):
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
         self.diaryList = items
     }
 
     func deleteDocument(by id: String) {
-        do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
-            )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.deleteOne(["_id": id])
-            self.retrieveDocuments()
-        } catch {
+        if let error = AyyyLocal.damn.deleteEntity(of: id, from: collection, groupBy: group) {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }
 
-    func deleteAllDocuments(with query: Document) {
-        do {
-            let localMongoClient = try stitchClient.serviceClient(
-                fromFactory: mongoClientFactory
-            )
-            let diaryCollection = try localMongoClient.db("diary_db").collection("diary")
-            try diaryCollection.deleteMany(query)
-        } catch {
+    func deleteAllDocuments(with query: [String: Any]) {
+        if let error = AyyyLocal.damn.removeEntityList(by: query, from: self.collection, groupBy: self.group) {
             debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
         }
     }

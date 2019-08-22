@@ -7,7 +7,6 @@
 //
 
 import UIKit
-import StitchCore
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -16,8 +15,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-          //-----------------------*
-         //  Initialize window    /
+        //-----------------------*
+        //  Initialize window    /
         //-----------------------*
         let navigationController = UINavigationController(rootViewController: DiaryTableViewController())
         let window = UIWindow(frame: UIScreen.main.bounds)
@@ -25,16 +24,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window.makeKeyAndVisible()
         self.window = window
 
-          //-----------------------*
-         //  Setup Stitch Client  /
-        //-----------------------*
-        do {
-            _ = try Stitch.initializeDefaultAppClient(
-                withClientAppID: "mongodiary"
-            )
-        } catch {
-            debugPrint("Failed to initialize MongoDB Stitch iOS SDK: \(error)")
-        }
         return true
     }
 
