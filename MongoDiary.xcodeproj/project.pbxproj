@@ -177,7 +177,8 @@
 			files = (
 			);
 			inputPaths = (
-				"${SRCROOT}/Pods/Target Support Files/Pods-MongoDiary/Pods-MongoDiary-frameworks.sh",
+				"${PODS_ROOT}/Target Support Files/Pods-MongoDiary/Pods-MongoDiary-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/AyyyLocal/AyyyLocal.framework",
 				"${BUILT_PRODUCTS_DIR}/MongoMobile/MongoMobile.framework",
 				"${BUILT_PRODUCTS_DIR}/MongoSwift/MongoSwift.framework",
 				"${BUILT_PRODUCTS_DIR}/StitchCore/StitchCore.framework",
@@ -197,6 +198,7 @@
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AyyyLocal.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MongoMobile.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MongoSwift.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/StitchCore.framework",
@@ -216,7 +218,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-MongoDiary/Pods-MongoDiary-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-MongoDiary/Pods-MongoDiary-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

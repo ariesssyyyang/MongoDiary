@@ -52,6 +52,7 @@ class DiaryTableViewController: UITableViewController {
     @objc func handleDestroy() {
         let destroyAlert = UIAlertController(title: "WARNING", message: "Are you sure you want to delete all?", preferredStyle: .alert)
         let yesAction = UIAlertAction(title: "YES", style: .default) { (_) in
+
             self.deleteAllDocuments(with: [:])
             self.retrieveDocuments()
         }
